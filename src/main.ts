@@ -29,28 +29,45 @@ const clearButton = document.createElement("button");
 clearButton.innerHTML = "clear!";
 
 const cursor = { active: false, x: 0, y: 0 };
+let arraysOfCurrentLines: { x: number; y: number }[][] = [];
+let line: { x: number; y: number }[] = [];
 
 canvas.addEventListener("mousedown", (mouseInfo) => {
   cursor.active = true;
   cursor.x = mouseInfo.offsetX;
   cursor.y = mouseInfo.offsetY;
+  line = [];
+  arraysOfCurrentLines.push(line);
+  line.push({ x: cursor.x, y: cursor.y });
 });
 
 canvas.addEventListener("mousemove", (mouseInfo) => {
-  //mouse has to be down before this script can run
   if (cursor.active) {
-    ctx!.beginPath();
-    //moves ctx to original cursor position set in mouse down
-    ctx!.moveTo(cursor.x, cursor.y);
-    //creates a line from there to where the mouse is now
-    ctx!.lineTo(mouseInfo.offsetX, mouseInfo.offsetY);
-    ctx!.stroke();
-    //resets cursors position to correct position
     cursor.x = mouseInfo.offsetX;
     cursor.y = mouseInfo.offsetY;
-    //repeats very frequently if mousemove is running.
+    line.push({ x: cursor.x, y: cursor.y });
+    const event = new Event("drawing-changed");
+    dispatchEvent(event);
   }
 });
+
+addEventListener("drawing-changed", handleDrawing);
+function handleDrawing() {
+  const num1 = 1;
+  const num0 = 0;
+  ctx!.clearRect(rectXorigin, rectYorigin, canvasWidth, canvasHeight);
+  for (const line of arraysOfCurrentLines) {
+    if (line.length > num1) {
+      ctx!.beginPath();
+      const { x, y } = line[num0];
+      ctx!.moveTo(x, y);
+      for (const { x, y } of line) {
+        ctx!.lineTo(x, y);
+      }
+      ctx!.stroke();
+    }
+  }
+}
 
 canvas.addEventListener("mouseup", () => {
   cursor.active = false;
@@ -61,7 +78,8 @@ canvas.addEventListener("mouseleave", () => {
 });
 
 clearButton.addEventListener("click", () => {
-  ctx!.reset();
+  ctx!.clearRect(rectXorigin, rectYorigin, canvasWidth, canvasHeight);
+  arraysOfCurrentLines = [];
 });
 app.append(canvas);
 app.append(header);
