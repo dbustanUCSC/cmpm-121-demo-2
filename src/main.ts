@@ -19,7 +19,6 @@ canvas.height = canvasHeight;
 canvas.style.background = "white";
 canvas.style.boxShadow = "1rem 1rem 20px grey";
 canvas.style.border = "10px solid black";
-canvas.style.cursor = "none";
 const ctx = canvas.getContext("2d");
 
 ctx!.fillStyle = "white";
@@ -37,7 +36,9 @@ thinMarker.innerHTML = "thin marker";
 thickMarker.innerHTML = "THICK marker";
 
 const thinLineWidth = 1;
-const thickLineWidth  = 7;
+const thickLineWidth = 7;
+let thickness = "thin";
+
 class HoldersofLines {
   markerLines: MarkerLine[];
   constructor() {
@@ -91,7 +92,7 @@ class MarkerLine {
 
   drag(x:number, y: number) {
     this.line.push({ x, y });
-    dispatchEvent(event);
+    dispatchEvent(drawingChanged);
   }
   length() {
     return this.line.length;
@@ -104,8 +105,45 @@ const lineHolder = new HoldersofLines;
 const redoLines = new HoldersofLines;
 const num1 = 1;
 const num0 = 0;
-const event = new Event("drawing-changed");
-const cursor = { active: false, x: 0, y: 0 };
+const drawingChanged = new Event("drawing-changed");
+const toolMoved = new Event("tool-moved");
+
+
+
+class CursorInformation {
+  active: boolean;
+  lineThickness: string;
+  x: number;
+  y: number;
+  constructor(active: boolean, lineThickness: string, x: number, y: number) {
+    this.active = active;
+    this.lineThickness = lineThickness;
+    this.x = x;
+    this.y = y;
+  }
+  
+  updateCoords(x: number, y: number) {
+    this.x = x;
+    this.y = y;
+  }
+  updateActive(active: boolean) {
+    this.active = active;
+  }
+  draw(ctx: CanvasRenderingContext2D) {
+    lineHolder.displayAll(ctx!);
+    ctx.fillStyle = "black";
+    ctx.beginPath();
+    if (thickness == "thick") {
+      ctx.arc(this.x, this.y, thickLineWidth/2, 0, 10, false);
+    } else if (thickness == "thin") {
+      ctx.arc(this.x, this.y, thinLineWidth + 0.5, 0, 10, false);
+    }
+    ctx.fill();
+  }
+  
+}
+
+const cursor = new CursorInformation(false, thickness, 0, 0);
 let line: MarkerLine;
 
 function handleDrawing() {
@@ -117,23 +155,28 @@ function handleDrawing() {
 
 canvas.addEventListener("mousedown", (mouseInfo) => {
   cursor.active = true;
-  cursor.x = mouseInfo.offsetX;
-  cursor.y = mouseInfo.offsetY;
+  cursor.updateCoords(mouseInfo.offsetX, mouseInfo.offsetY);
   line = new MarkerLine(thickness);
   lineHolder.push(line);
   line.drag(cursor.x, cursor.y);
 });
 
 canvas.addEventListener("mousemove", (mouseInfo) => {
+  dispatchEvent(toolMoved);
+  cursor.updateCoords(mouseInfo.offsetX, mouseInfo.offsetY);
   if (cursor.active) {
-    cursor.x = mouseInfo.offsetX;
-    cursor.y = mouseInfo.offsetY;
     line.drag(cursor.x, cursor.y);  
   }
+  
 });
 
 addEventListener("drawing-changed", handleDrawing);
+addEventListener("tool-moved", toolUpdate);
 
+
+function toolUpdate() {
+  cursor.draw(ctx!);
+}
 
 canvas.addEventListener("mouseup", () => {
   cursor.active = false;
@@ -153,24 +196,30 @@ clearButton.addEventListener("click", () => {
 undoButton.addEventListener("click", () => {
   if (lineHolder.length() > num0) {
     redoLines.push(lineHolder.pop()!);
-    dispatchEvent(event);
+    dispatchEvent(drawingChanged);
   }
 });
 
-redoButton.addEventListener("click", () => {
+redoButton.addEventListener("click", () => { 
   if (redoLines.length () > num0) {
     lineHolder.push(redoLines.pop()!);
-    dispatchEvent(event);
+    dispatchEvent(drawingChanged);
   }
 });
-let thickness = "thin";
+
+
 thickMarker.addEventListener("click", () => {
   thickness = "thick";
+  cursor.lineThickness = thickness;
+  dispatchEvent(toolMoved);
+  
   
 });
 
 thinMarker.addEventListener("click", () => {
   thickness = "thin";
+  cursor.lineThickness = thickness;
+  dispatchEvent(toolMoved);
   
 });
 
