@@ -33,49 +33,93 @@ redoButton.innerHTML = "Redo.";
 undoButton.innerHTML = "Undo.";
 clearButton.innerHTML = "clear!";
 
+
+class HoldersofLines {
+  markerLines: MarkerLine[];
+  constructor() {
+    this.markerLines = [];
+  }
+  
+  push(line: MarkerLine) {
+    this.markerLines.push(line);
+  }
+  clear() {
+    this.markerLines = [];
+  }
+  length() {
+    return this.markerLines.length;
+  }
+
+  pop() {
+    return this.markerLines.pop();
+  }
+}
+
+class MarkerLine {
+  line: { x: number; y: number }[] = [];
+  display(ctx: CanvasRenderingContext2D) {
+    ctx.beginPath();
+    const { x, y } = this.line[num0];
+    ctx.moveTo(x, y);
+    for (const { x, y } of this.line) {
+      ctx.lineTo(x, y);
+    }
+    ctx.stroke();
+  }
+
+  drag(x:number, y: number) {
+    this.line.push({ x, y });
+    dispatchEvent(event);
+  }
+  length() {
+    return this.line.length;
+  }
+  
+}
+
+
+const lineHolder = new HoldersofLines;
+const redoLines = new HoldersofLines;
+
+
+
+
+
 const num1 = 1;
 const num0 = 0;
 const event = new Event("drawing-changed");
 const cursor = { active: false, x: 0, y: 0 };
-let arraysOfCurrentLines: { x: number; y: number }[][] = [];
-const redoLines: { x: number; y: number }[][] = [];
+let line: MarkerLine;
 
-let line: { x: number; y: number }[] = [];
+function handleDrawing() {
+  ctx!.clearRect(rectXorigin, rectYorigin, canvasWidth, canvasHeight);
+  for (const line of lineHolder.markerLines) {
+    if (line.length() > num1) {
+      line.display(ctx!);
+    }
+  }
+}
+
 
 canvas.addEventListener("mousedown", (mouseInfo) => {
   cursor.active = true;
   cursor.x = mouseInfo.offsetX;
   cursor.y = mouseInfo.offsetY;
-  line = [];
-  arraysOfCurrentLines.push(line);
-  line.push({ x: cursor.x, y: cursor.y });
+  line = new MarkerLine();
+  lineHolder.push(line);
+  line.drag(cursor.x, cursor.y);
 });
 
 canvas.addEventListener("mousemove", (mouseInfo) => {
   if (cursor.active) {
     cursor.x = mouseInfo.offsetX;
     cursor.y = mouseInfo.offsetY;
-    line.push({ x: cursor.x, y: cursor.y });
-
-    dispatchEvent(event);
+    line.drag(cursor.x, cursor.y);  
   }
 });
 
 addEventListener("drawing-changed", handleDrawing);
-function handleDrawing() {
-  ctx!.clearRect(rectXorigin, rectYorigin, canvasWidth, canvasHeight);
-  for (const line of arraysOfCurrentLines) {
-    if (line.length > num1) {
-      ctx!.beginPath();
-      const { x, y } = line[num0];
-      ctx!.moveTo(x, y);
-      for (const { x, y } of line) {
-        ctx!.lineTo(x, y);
-      }
-      ctx!.stroke();
-    }
-  }
-}
+
 
 canvas.addEventListener("mouseup", () => {
   cursor.active = false;
@@ -87,19 +131,19 @@ canvas.addEventListener("mouseleave", () => {
 
 clearButton.addEventListener("click", () => {
   ctx!.clearRect(rectXorigin, rectYorigin, canvasWidth, canvasHeight);
-  arraysOfCurrentLines = [];
+  lineHolder.clear();
 });
 
 undoButton.addEventListener("click", () => {
-  if (arraysOfCurrentLines.length > num0) {
-    redoLines.push(arraysOfCurrentLines.pop()!);
+  if (lineHolder.length() > num0) {
+    redoLines.push(lineHolder.pop()!);
     dispatchEvent(event);
   }
 });
 
 redoButton.addEventListener("click", () => {
-  if (redoLines.length > num0) {
-    arraysOfCurrentLines.push(redoLines.pop()!);
+  if (redoLines.length () > num0) {
+    lineHolder.push(redoLines.pop()!);
     dispatchEvent(event);
   }
 });
