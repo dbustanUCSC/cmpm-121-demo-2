@@ -68,9 +68,20 @@ class HoldersofLines {
 }
 
 class MarkerLine {
+  constructor(thickness: string) {
+    this.lineW = thickness;
+  }
+  thinLineWidth: number = 1;
+  thickLineWidth: number  = 7;
+  lineW: string;
   line: { x: number; y: number }[] = [];
   display(ctx: CanvasRenderingContext2D) {
     ctx.beginPath();
+    if (this.lineW == 'thin') {
+      ctx.lineWidth = this.thinLineWidth;
+    } else if (this.lineW == 'thick') {
+      ctx.lineWidth = this.thickLineWidth;
+    }
     const { x, y } = this.line[num0];
     ctx.moveTo(x, y);
     for (const { x, y } of this.line) {
@@ -109,7 +120,7 @@ canvas.addEventListener("mousedown", (mouseInfo) => {
   cursor.active = true;
   cursor.x = mouseInfo.offsetX;
   cursor.y = mouseInfo.offsetY;
-  line = new MarkerLine();
+  line = new MarkerLine(thickness);
   lineHolder.push(line);
   line.drag(cursor.x, cursor.y);
 });
@@ -133,8 +144,6 @@ canvas.addEventListener("mouseleave", () => {
   cursor.active = false;
 });
 
-
-
 clearButton.addEventListener("click", () => {
   ctx!.clearRect(rectXorigin, rectYorigin, canvasWidth, canvasHeight);
   lineHolder.clear();
@@ -154,7 +163,16 @@ redoButton.addEventListener("click", () => {
     dispatchEvent(event);
   }
 });
+let thickness = "thin";
+thickMarker.addEventListener("click", () => {
+  thickness = "thick";
+  console.log(thickness);
+});
 
+thinMarker.addEventListener("click", () => {
+  thickness = "thin";
+  console.log(thickness);
+});
 
 
 
