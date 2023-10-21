@@ -37,6 +37,10 @@ thickMarker.innerHTML = "THICK marker";
 
 const thinLineWidth = 1;
 const thickLineWidth = 7;
+const thickRadius = thickLineWidth / 2;
+const thinRadius = thinLineWidth + 0.5;
+const startAngle = 0;
+const endAngle = 10;
 let thickness = "thin";
 
 class HoldersofLines {
@@ -126,17 +130,15 @@ class CursorInformation {
     this.x = x;
     this.y = y;
   }
-  updateActive(active: boolean) {
-    this.active = active;
-  }
   draw(ctx: CanvasRenderingContext2D) {
-    lineHolder.displayAll(ctx!);
+   
+    lineHolder.displayAll(ctx);
     ctx.fillStyle = "black";
     ctx.beginPath();
     if (thickness == "thick") {
-      ctx.arc(this.x, this.y, thickLineWidth/2, 0, 10, false);
+      ctx.arc(this.x, this.y, thickRadius, startAngle, endAngle, false);
     } else if (thickness == "thin") {
-      ctx.arc(this.x, this.y, thinLineWidth + 0.5, 0, 10, false);
+      ctx.arc(this.x, this.y, thinRadius, startAngle, endAngle, false);
     }
     ctx.fill();
   }
@@ -162,12 +164,11 @@ canvas.addEventListener("mousedown", (mouseInfo) => {
 });
 
 canvas.addEventListener("mousemove", (mouseInfo) => {
-  dispatchEvent(toolMoved);
   cursor.updateCoords(mouseInfo.offsetX, mouseInfo.offsetY);
+  dispatchEvent(toolMoved);
   if (cursor.active) {
     line.drag(cursor.x, cursor.y);  
   }
-  
 });
 
 addEventListener("drawing-changed", handleDrawing);
@@ -212,15 +213,12 @@ thickMarker.addEventListener("click", () => {
   thickness = "thick";
   cursor.lineThickness = thickness;
   dispatchEvent(toolMoved);
-  
-  
 });
 
 thinMarker.addEventListener("click", () => {
   thickness = "thin";
   cursor.lineThickness = thickness;
   dispatchEvent(toolMoved);
-  
 });
 
 
