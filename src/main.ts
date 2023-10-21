@@ -14,7 +14,6 @@ const canvasWidth = 256;
 const canvasHeight = 256;
 const rectXorigin = 0;
 const rectYorigin = 0;
-
 canvas.width = canvasWidth;
 canvas.height = canvasHeight;
 canvas.style.background = "white";
@@ -37,7 +36,8 @@ clearButton.innerHTML = "clear!";
 thinMarker.innerHTML = "thin marker";
 thickMarker.innerHTML = "THICK marker";
 
-
+const thinLineWidth = 1;
+const thickLineWidth  = 7;
 class HoldersofLines {
   markerLines: MarkerLine[];
   constructor() {
@@ -71,16 +71,15 @@ class MarkerLine {
   constructor(thickness: string) {
     this.lineW = thickness;
   }
-  thinLineWidth: number = 1;
-  thickLineWidth: number  = 7;
+  
   lineW: string;
   line: { x: number; y: number }[] = [];
   display(ctx: CanvasRenderingContext2D) {
     ctx.beginPath();
-    if (this.lineW == 'thin') {
-      ctx.lineWidth = this.thinLineWidth;
-    } else if (this.lineW == 'thick') {
-      ctx.lineWidth = this.thickLineWidth;
+    if (this.lineW == "thin") {
+      ctx.lineWidth = thinLineWidth;
+    } else if (this.lineW == "thick") {
+      ctx.lineWidth = thickLineWidth;
     }
     const { x, y } = this.line[num0];
     ctx.moveTo(x, y);
@@ -147,6 +146,7 @@ canvas.addEventListener("mouseleave", () => {
 clearButton.addEventListener("click", () => {
   ctx!.clearRect(rectXorigin, rectYorigin, canvasWidth, canvasHeight);
   lineHolder.clear();
+  redoLines.clear();
 });
 
 
@@ -166,12 +166,12 @@ redoButton.addEventListener("click", () => {
 let thickness = "thin";
 thickMarker.addEventListener("click", () => {
   thickness = "thick";
-  console.log(thickness);
+  
 });
 
 thinMarker.addEventListener("click", () => {
   thickness = "thin";
-  console.log(thickness);
+  
 });
 
 
