@@ -29,15 +29,27 @@ ctx!.fillRect(rectXorigin, rectYorigin, canvasWidth, canvasHeight);
 const clearButton = document.createElement("button");
 const undoButton = document.createElement("button");
 const redoButton = document.createElement("button");
+const thinMarker = document.createElement("button");
+const thickMarker = document.createElement("button");
 redoButton.innerHTML = "Redo.";
 undoButton.innerHTML = "Undo.";
 clearButton.innerHTML = "clear!";
+thinMarker.innerHTML = "thin marker";
+thickMarker.innerHTML = "THICK marker";
 
 
 class HoldersofLines {
   markerLines: MarkerLine[];
   constructor() {
     this.markerLines = [];
+  }
+  displayAll(ctx: CanvasRenderingContext2D) {
+    ctx.clearRect(rectXorigin, rectYorigin, canvasWidth, canvasHeight);
+    for (const line of lineHolder.markerLines) {
+      if (line.length() > num1) {
+        line.display(ctx);
+      }
+    }
   }
   
   push(line: MarkerLine) {
@@ -80,11 +92,6 @@ class MarkerLine {
 
 const lineHolder = new HoldersofLines;
 const redoLines = new HoldersofLines;
-
-
-
-
-
 const num1 = 1;
 const num0 = 0;
 const event = new Event("drawing-changed");
@@ -92,12 +99,9 @@ const cursor = { active: false, x: 0, y: 0 };
 let line: MarkerLine;
 
 function handleDrawing() {
-  ctx!.clearRect(rectXorigin, rectYorigin, canvasWidth, canvasHeight);
-  for (const line of lineHolder.markerLines) {
-    if (line.length() > num1) {
-      line.display(ctx!);
-    }
-  }
+  
+  lineHolder.displayAll(ctx!);
+  
 }
 
 
@@ -129,10 +133,13 @@ canvas.addEventListener("mouseleave", () => {
   cursor.active = false;
 });
 
+
+
 clearButton.addEventListener("click", () => {
   ctx!.clearRect(rectXorigin, rectYorigin, canvasWidth, canvasHeight);
   lineHolder.clear();
 });
+
 
 undoButton.addEventListener("click", () => {
   if (lineHolder.length() > num0) {
@@ -147,8 +154,15 @@ redoButton.addEventListener("click", () => {
     dispatchEvent(event);
   }
 });
+
+
+
+
+
 app.append(canvas);
 app.append(header);
 app.append(clearButton);
 app.append(undoButton);
 app.append(redoButton);
+app.append(thinMarker);
+app.append(thickMarker);
