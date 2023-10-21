@@ -112,9 +112,6 @@ canvas.addEventListener("mousedown", (mouseInfo) => {
   line = new MarkerLine();
   lineHolder.push(line);
   line.drag(cursor.x, cursor.y);
-  line = new MarkerLine();
-  lineHolder.push(line);
-  line.drag(cursor.x, cursor.y);
 });
 
 canvas.addEventListener("mousemove", (mouseInfo) => {
@@ -122,12 +119,10 @@ canvas.addEventListener("mousemove", (mouseInfo) => {
     cursor.x = mouseInfo.offsetX;
     cursor.y = mouseInfo.offsetY;
     line.drag(cursor.x, cursor.y);  
-    line.drag(cursor.x, cursor.y);  
   }
 });
 
 addEventListener("drawing-changed", handleDrawing);
-
 
 
 canvas.addEventListener("mouseup", () => {
@@ -143,13 +138,10 @@ canvas.addEventListener("mouseleave", () => {
 clearButton.addEventListener("click", () => {
   ctx!.clearRect(rectXorigin, rectYorigin, canvasWidth, canvasHeight);
   lineHolder.clear();
-  lineHolder.clear();
 });
 
 
 undoButton.addEventListener("click", () => {
-  if (lineHolder.length() > num0) {
-    redoLines.push(lineHolder.pop()!);
   if (lineHolder.length() > num0) {
     redoLines.push(lineHolder.pop()!);
     dispatchEvent(event);
@@ -157,8 +149,6 @@ undoButton.addEventListener("click", () => {
 });
 
 redoButton.addEventListener("click", () => {
-  if (redoLines.length () > num0) {
-    lineHolder.push(redoLines.pop()!);
   if (redoLines.length () > num0) {
     lineHolder.push(redoLines.pop()!);
     dispatchEvent(event);
