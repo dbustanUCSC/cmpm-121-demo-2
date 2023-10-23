@@ -189,8 +189,7 @@ class CursorInformation {
     this.y = y;
   }
   draw(ctx: CanvasRenderingContext2D) {
-    lineHolder.displaylines(ctx);
-    allStickers.displayStickers(ctx);
+    dispatchEvent(drawingChanged);
     ctx.fillStyle = "black";
     ctx.beginPath();
     if (thickness == "thick") {
@@ -201,8 +200,7 @@ class CursorInformation {
     ctx.fill();
   }
   drawSticker(ctx: CanvasRenderingContext2D) {
-    lineHolder.displaylines(ctx);
-    allStickers.displayStickers(ctx);
+    dispatchEvent(drawingChanged);
     ctx.font = "30px Arial";
     ctx.fillText(cursor.currentSticker, this.x, this.y, 50);
   }
