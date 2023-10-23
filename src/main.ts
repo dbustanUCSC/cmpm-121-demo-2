@@ -19,36 +19,67 @@ canvas.height = canvasHeight;
 canvas.style.background = "white";
 canvas.style.boxShadow = "1rem 1rem 20px grey";
 canvas.style.border = "10px solid black";
+canvas.style.cursor = "none";
 const ctx = canvas.getContext("2d");
 
 ctx!.fillStyle = "white";
 ctx!.fillRect(rectXorigin, rectYorigin, canvasWidth, canvasHeight);
 
+//buttons
 const clearButton = document.createElement("button");
 const undoButton = document.createElement("button");
 const redoButton = document.createElement("button");
 const thinMarker = document.createElement("button");
 const thickMarker = document.createElement("button");
+const witchSticker = document.createElement("button");
+const throwupSticker = document.createElement("button");
+const pumpkinSticker = document.createElement("button");
+  
+//inner
 redoButton.innerHTML = "Redo.";
 undoButton.innerHTML = "Undo.";
 clearButton.innerHTML = "clear!";
 thinMarker.innerHTML = "thin marker";
 thickMarker.innerHTML = "THICK marker";
+witchSticker.innerHTML = "🧙‍♀️";
+throwupSticker.innerHTML = "🤢";
+pumpkinSticker.innerHTML = "🎃";
 
-const thinLineWidth = 1;
-const thickLineWidth = 7;
-const thickRadius = thickLineWidth / 2;
-const thinRadius = thinLineWidth + 0.5;
-const startAngle = 0;
-const endAngle = 10;
-let thickness = "thin";
+//class to hold stickers
+class StickerSet {
+  stickers: Sticker[] = [];
+  push(sticker:Sticker) {
+    allStickers.stickers.push(sticker);
+  }
+  displayStickers(ctx: CanvasRenderingContext2D) {
+    for (const sticker of allStickers.stickers) {
+      sticker.draw(ctx);
+    }
+  }
+}
+
+//sticker properties
+class Sticker {
+  stickerName: string;
+  x: number;
+  y: number;
+  constructor(stickerName:string, x: number, y: number) {
+    this.stickerName = stickerName;
+    this.x = x;
+    this.y = y;
+  }
+  draw(ctx: CanvasRenderingContext2D) {
+    lineHolder.displaylines(ctx);
+    ctx.font = "arial";
+    ctx.fillStyle = "black";
+    ctx.fillText(newSticker.stickerName, this.x, this.y, 50);
+  }
+}
 
 class HoldersofLines {
-  markerLines: MarkerLine[];
-  constructor() {
-    this.markerLines = [];
-  }
-  displayAll(ctx: CanvasRenderingContext2D) {
+  markerLines: MarkerLine[] = [];
+  
+  displaylines(ctx: CanvasRenderingContext2D) {
     ctx.clearRect(rectXorigin, rectYorigin, canvasWidth, canvasHeight);
     for (const line of lineHolder.markerLines) {
       if (line.length() > num1) {
@@ -79,15 +110,17 @@ class MarkerLine {
   
   lineW: string;
   line: { x: number; y: number }[] = [];
+
+
   display(ctx: CanvasRenderingContext2D) {
-    ctx.beginPath();
+      ctx.beginPath();
     if (this.lineW == "thin") {
       ctx.lineWidth = thinLineWidth;
     } else if (this.lineW == "thick") {
       ctx.lineWidth = thickLineWidth;
     }
     const { x, y } = this.line[num0];
-    ctx.moveTo(x, y);
+      ctx.moveTo(x, y);
     for (const { x, y } of this.line) {
       ctx.lineTo(x, y);
     }
@@ -105,8 +138,23 @@ class MarkerLine {
 }
 
 
+//button creations
+
+
+const thinLineWidth = 1;
+const thickLineWidth = 7;
+const thickRadius = thickLineWidth / 2;
+const thinRadius = thinLineWidth + 0.5;
+const startAngle = 0;
+const endAngle = 10;
+
+let thickness = "thin";
+
+
 const lineHolder = new HoldersofLines;
 const redoLines = new HoldersofLines;
+const allStickers = new StickerSet;
+
 const num1 = 1;
 const num0 = 0;
 const drawingChanged = new Event("drawing-changed");
@@ -116,11 +164,15 @@ const toolMoved = new Event("tool-moved");
 
 class CursorInformation {
   active: boolean;
+  isSticker: boolean;
+  currentSticker: string;
   lineThickness: string;
   x: number;
   y: number;
-  constructor(active: boolean, lineThickness: string, x: number, y: number) {
+  constructor(active: boolean, isSticker: boolean, currentSticker:string, lineThickness: string, x: number, y: number) {
     this.active = active;
+    this.isSticker = isSticker;
+    this.currentSticker = currentSticker;
     this.lineThickness = lineThickness;
     this.x = x;
     this.y = y;
@@ -131,52 +183,76 @@ class CursorInformation {
     this.y = y;
   }
   draw(ctx: CanvasRenderingContext2D) {
-   
-    lineHolder.displayAll(ctx);
-    ctx.fillStyle = "black";
-    ctx.beginPath();
-    if (thickness == "thick") {
-      ctx.arc(this.x, this.y, thickRadius, startAngle, endAngle, false);
-    } else if (thickness == "thin") {
-      ctx.arc(this.x, this.y, thinRadius, startAngle, endAngle, false);
-    }
-    ctx.fill();
+      lineHolder.displaylines(ctx);
+      ctx.fillStyle = "black";
+      ctx.beginPath();
+      if (thickness == "thick") {
+        ctx.arc(this.x, this.y, thickRadius, startAngle, endAngle, false);
+      } else if (thickness == "thin") {
+        ctx.arc(this.x, this.y, thinRadius, startAngle, endAngle, false);
+      }
+      ctx.fill();
+  }
+  drawSticker(ctx: CanvasRenderingContext2D) {
+    lineHolder.displaylines(ctx);
+    ctx.font = "30px Arial";
+    ctx.fillText(cursor.currentSticker, this.x, this. y, 50);
+  }
+}
+
+
+const cursor = new CursorInformation(false, false, "null", thickness, 0, 0);
+
+let newSticker: Sticker;
+function handleDrawing() {
+  
+  lineHolder.displaylines(ctx!);
+  if (cursor.isSticker) {
+    newSticker.draw(ctx!);
   }
   
 }
 
-const cursor = new CursorInformation(false, thickness, 0, 0);
 let line: MarkerLine;
-
-function handleDrawing() {
-  
-  lineHolder.displayAll(ctx!);
-  
-}
 
 
 canvas.addEventListener("mousedown", (mouseInfo) => {
-  cursor.active = true;
+  if (cursor.isSticker) {
+    cursor.active = false;
+    newSticker = new Sticker(cursor.currentSticker, cursor.x, cursor.y);
+    allStickers.push(newSticker);
+    dispatchEvent(drawingChanged);
+  } else {
+    cursor.active = true;
+    line = new MarkerLine(thickness);
+    lineHolder.push(line);
+    line.drag(cursor.x, cursor.y);
+  }
   cursor.updateCoords(mouseInfo.offsetX, mouseInfo.offsetY);
-  line = new MarkerLine(thickness);
-  lineHolder.push(line);
-  line.drag(cursor.x, cursor.y);
+ 
+  
+  
 });
 
 canvas.addEventListener("mousemove", (mouseInfo) => {
   cursor.updateCoords(mouseInfo.offsetX, mouseInfo.offsetY);
-  dispatchEvent(toolMoved);
   if (cursor.active) {
     line.drag(cursor.x, cursor.y);  
+  } else {
+    dispatchEvent(toolMoved);
   }
 });
 
 addEventListener("drawing-changed", handleDrawing);
-addEventListener("tool-moved", toolUpdate);
+addEventListener("tool-moved", handleTool);
 
 
-function toolUpdate() {
-  cursor.draw(ctx!);
+function handleTool() {
+  if (cursor.isSticker) {
+    cursor.drawSticker(ctx!);
+  } else {
+    cursor.draw(ctx!);
+  }
 }
 
 canvas.addEventListener("mouseup", () => {
@@ -210,20 +286,41 @@ redoButton.addEventListener("click", () => {
 
 
 thickMarker.addEventListener("click", () => {
+  cursor.isSticker = false;
   thickness = "thick";
   cursor.lineThickness = thickness;
   dispatchEvent(toolMoved);
 });
 
+
 thinMarker.addEventListener("click", () => {
+  cursor.isSticker = false;
   thickness = "thin";
   cursor.lineThickness = thickness;
   dispatchEvent(toolMoved);
 });
 
+witchSticker.addEventListener("click", () => {
+  cursor.currentSticker = witchSticker.innerHTML;
+  cursor.isSticker = true;
+  dispatchEvent(toolMoved);
+});
+
+throwupSticker.addEventListener("click", () => {
+  cursor.currentSticker = throwupSticker.innerHTML;
+  cursor.isSticker = true;
+  dispatchEvent(toolMoved);
+});
+
+pumpkinSticker.addEventListener("click", () => {
+  cursor.currentSticker = pumpkinSticker.innerHTML;
+  cursor.isSticker = true;
+  dispatchEvent(toolMoved);
+});
 
 
 
+//Appending
 app.append(canvas);
 app.append(header);
 app.append(clearButton);
@@ -231,3 +328,6 @@ app.append(undoButton);
 app.append(redoButton);
 app.append(thinMarker);
 app.append(thickMarker);
+app.append(witchSticker);
+app.append(throwupSticker);
+app.append(pumpkinSticker);
