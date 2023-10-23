@@ -31,9 +31,7 @@ const undoButton = document.createElement("button");
 const redoButton = document.createElement("button");
 const thinMarker = document.createElement("button");
 const thickMarker = document.createElement("button");
-const witchSticker = document.createElement("button");
-const throwupSticker = document.createElement("button");
-const pumpkinSticker = document.createElement("button");
+const customSticker = document.createElement("button");
 
 //inner
 redoButton.innerHTML = "Redo.";
@@ -41,11 +39,13 @@ undoButton.innerHTML = "Undo.";
 clearButton.innerHTML = "clear!";
 thinMarker.innerHTML = "thin marker";
 thickMarker.innerHTML = "THICK marker";
-witchSticker.innerHTML = "🧙‍♀️";
-throwupSticker.innerHTML = "🤢";
-pumpkinSticker.innerHTML = "🎃";
+customSticker.innerHTML = "create your custom sticker here...";
+const stickers = [
+  { name: "witch", emoji: "🧙‍♀️" },
+  { name: "throwup", emoji: "🤢" },
+  { name: "pumpkin", emoji: "🎃" },
+];
 
-//class to hold stickers
 class StickerSet {
   stickers: Sticker[] = [];
   push(sticker: Sticker) {
@@ -208,12 +208,12 @@ class CursorInformation {
 
 const cursor = new CursorInformation(false, false, "null", thickness, 0, 0);
 
-let newSticker: Sticker;
 function handleDrawing() {
   lineHolder.displaylines(ctx!);
   allStickers.displayStickers(ctx!);
 }
 
+let newSticker: Sticker;
 let line: MarkerLine;
 
 canvas.addEventListener("mousedown", (mouseInfo) => {
@@ -294,25 +294,17 @@ thinMarker.addEventListener("click", () => {
   cursor.lineThickness = thickness;
   dispatchEvent(toolMoved);
 });
-
-witchSticker.addEventListener("click", () => {
-  cursor.currentSticker = witchSticker.innerHTML;
-  cursor.isSticker = true;
-  dispatchEvent(toolMoved);
+customSticker.addEventListener("click", () => {
+  const text = prompt("Custom sticker text", "🧽");
+  const createdSticker = document.createElement("button");
+  createdSticker.innerHTML = text!;
+  createdSticker.addEventListener("click", () => {
+    cursor.currentSticker = createdSticker.innerHTML;
+    cursor.isSticker = true;
+    dispatchEvent(toolMoved);
+  });
+  app.append(createdSticker);
 });
-
-throwupSticker.addEventListener("click", () => {
-  cursor.currentSticker = throwupSticker.innerHTML;
-  cursor.isSticker = true;
-  dispatchEvent(toolMoved);
-});
-
-pumpkinSticker.addEventListener("click", () => {
-  cursor.currentSticker = pumpkinSticker.innerHTML;
-  cursor.isSticker = true;
-  dispatchEvent(toolMoved);
-});
-
 //Appending
 app.append(canvas);
 app.append(header);
@@ -321,6 +313,15 @@ app.append(undoButton);
 app.append(redoButton);
 app.append(thinMarker);
 app.append(thickMarker);
-app.append(witchSticker);
-app.append(throwupSticker);
-app.append(pumpkinSticker);
+app.append(customSticker);
+//implements and appends current array of default stickers
+stickers.forEach((element) => {
+  const generalSticker = document.createElement("button");
+  generalSticker.innerHTML = element.emoji;
+  generalSticker.addEventListener("click", () => {
+    cursor.currentSticker = generalSticker.innerHTML;
+    cursor.isSticker = true;
+    dispatchEvent(toolMoved);
+  });
+  app.append(generalSticker);
+});
