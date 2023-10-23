@@ -254,7 +254,6 @@ function handleTool() {
 }
 
 canvas.addEventListener("mouseup", () => {
-  mouseDown = false;
   cursor.active = false;
   dispatchEvent(drawingChanged);
 });
