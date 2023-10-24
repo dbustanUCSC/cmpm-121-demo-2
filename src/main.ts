@@ -34,13 +34,11 @@ const thickMarker = createButton("thick marker");
 const customSticker = createButton("custom sticker...");
 const exportButton = createButton("export");
 
-
 function createButton(name: string) {
   const b = document.createElement("button");
   b.innerHTML = name;
   return b;
 }
-
 
 const STICKERS = [
   { name: "witch", emoji: "🧙‍♀️" },
@@ -89,6 +87,8 @@ class HoldersofLines {
 
   displaylines(ctx: CanvasRenderingContext2D) {
     ctx.clearRect(rectXorigin, rectYorigin, canvasWidth, canvasHeight);
+    ctx.fillStyle = "white";
+    ctx.fillRect(0, 0, canvasWidth, canvasHeight);
     for (const line of lineHolder.markerLines) {
       if (line.length() > 1) {
         line.display(ctx);
@@ -297,16 +297,14 @@ thinMarker.addEventListener("click", () => {
 });
 const exportCanvasW = 1024;
 const exportCanvasH = 1024;
-const canvasScale = 4;
+const exportCanvasScale = 4;
 
 exportButton.addEventListener("click", () => {
   const exportCanvas = document.createElement("canvas");
   exportCanvas.width = exportCanvasW;
   exportCanvas.height = exportCanvasH;
   ctx = exportCanvas.getContext("2d")!;
-  //FIX CANVAS export
-  ctx.fillStyle = "white";
-  ctx.scale(canvasScale, canvasScale);
+  ctx.scale(exportCanvasScale, exportCanvasScale);
   dispatchEvent(drawingChanged);
   const anchor = document.createElement("a");
   anchor.href = exportCanvas.toDataURL("image/png");
@@ -315,7 +313,6 @@ exportButton.addEventListener("click", () => {
   ctx = canvas.getContext("2d")!;
 });
 
-//creation of custon stickers
 app.append(canvas);
 app.append(header);
 app.append(clearButton);
