@@ -20,27 +20,28 @@ canvas.style.background = "white";
 canvas.style.boxShadow = "1rem 1rem 20px grey";
 canvas.style.border = "10px solid black";
 canvas.style.cursor = "none";
-const ctx = canvas.getContext("2d");
+const ctx = canvas.getContext("2d")!;
 
-ctx!.fillStyle = "white";
-ctx!.fillRect(rectXorigin, rectYorigin, canvasWidth, canvasHeight);
+ctx.fillStyle = "white";
+ctx.fillRect(rectXorigin, rectYorigin, canvasWidth, canvasHeight);
 
 //buttons
-const clearButton = document.createElement("button");
-const undoButton = document.createElement("button");
-const redoButton = document.createElement("button");
-const thinMarker = document.createElement("button");
-const thickMarker = document.createElement("button");
-const customSticker = document.createElement("button");
+const clearButton = createButton("clear!");
+const undoButton = createButton("undo");
+const redoButton = createButton("redo");
+const thinMarker = createButton("thin marker");
+const thickMarker = createButton("thick marker");
+const customSticker = createButton("custom sticker...");
 
-//inner
-redoButton.innerHTML = "Redo.";
-undoButton.innerHTML = "Undo.";
-clearButton.innerHTML = "clear!";
-thinMarker.innerHTML = "thin marker";
-thickMarker.innerHTML = "THICK marker";
-customSticker.innerHTML = "create your custom sticker here...";
-const stickers = [
+
+function createButton(name: string) {
+  const b = document.createElement("button");
+  b.innerHTML = name;
+  return b;
+}
+
+
+const STICKERS = [
   { name: "witch", emoji: "🧙‍♀️" },
   { name: "throwup", emoji: "🤢" },
   { name: "pumpkin", emoji: "🎃" },
@@ -88,7 +89,7 @@ class HoldersofLines {
   displaylines(ctx: CanvasRenderingContext2D) {
     ctx.clearRect(rectXorigin, rectYorigin, canvasWidth, canvasHeight);
     for (const line of lineHolder.markerLines) {
-      if (line.length() > num1) {
+      if (line.length() > 1) {
         line.display(ctx);
       }
     }
@@ -124,7 +125,7 @@ class MarkerLine {
     } else if (this.lineW == "thick") {
       ctx.lineWidth = thickLineWidth;
     }
-    const { x, y } = this.line[num0];
+    const { x, y } = this.line[0];
     ctx.moveTo(x, y);
     for (const { x, y } of this.line) {
       ctx.lineTo(x, y);
@@ -156,8 +157,6 @@ const lineHolder = new HoldersofLines();
 const redoLines = new HoldersofLines();
 const allStickers = new StickerSet();
 
-const num1 = 1;
-const num0 = 0;
 const drawingChanged = new Event("drawing-changed");
 const toolMoved = new Event("tool-moved");
 
@@ -202,15 +201,16 @@ class CursorInformation {
   drawSticker(ctx: CanvasRenderingContext2D) {
     dispatchEvent(drawingChanged);
     ctx.font = "30px Arial";
-    ctx.fillText(cursor.currentSticker, this.x, this.y, 50);
+    const EMOJI_WIDTH = 50;
+    ctx.fillText(cursor.currentSticker, this.x, this.y, EMOJI_WIDTH);
   }
 }
 
 const cursor = new CursorInformation(false, false, "null", thickness, 0, 0);
 
 function handleDrawing() {
-  lineHolder.displaylines(ctx!);
-  allStickers.displayStickers(ctx!);
+  lineHolder.displaylines(ctx);
+  allStickers.displayStickers(ctx);
 }
 
 let newSticker: Sticker;
@@ -228,6 +228,7 @@ canvas.addEventListener("mousedown", (mouseInfo) => {
     line.drag(cursor.x, cursor.y);
   }
   cursor.updateCoords(mouseInfo.offsetX, mouseInfo.offsetY);
+  dispatchEvent(toolMoved);
 });
 
 canvas.addEventListener("mousemove", (mouseInfo) => {
@@ -245,9 +246,9 @@ addEventListener("tool-moved", handleTool);
 
 function handleTool() {
   if (cursor.isSticker) {
-    cursor.drawSticker(ctx!);
+    cursor.drawSticker(ctx);
   } else {
-    cursor.draw(ctx!);
+    cursor.draw(ctx);
   }
 }
 
@@ -261,21 +262,21 @@ canvas.addEventListener("mouseleave", () => {
 });
 
 clearButton.addEventListener("click", () => {
-  ctx!.clearRect(rectXorigin, rectYorigin, canvasWidth, canvasHeight);
+  ctx.clearRect(rectXorigin, rectYorigin, canvasWidth, canvasHeight);
   lineHolder.clear();
   redoLines.clear();
   allStickers.clear();
 });
 
 undoButton.addEventListener("click", () => {
-  if (lineHolder.length() > num0) {
+  if (lineHolder.length()) {
     redoLines.push(lineHolder.pop()!);
     dispatchEvent(drawingChanged);
   }
 });
 
 redoButton.addEventListener("click", () => {
-  if (redoLines.length() > num0) {
+  if (redoLines.length()) {
     lineHolder.push(redoLines.pop()!);
     dispatchEvent(drawingChanged);
   }
@@ -294,18 +295,8 @@ thinMarker.addEventListener("click", () => {
   cursor.lineThickness = thickness;
   dispatchEvent(toolMoved);
 });
-customSticker.addEventListener("click", () => {
-  const text = prompt("Custom sticker text", "🧽");
-  const createdSticker = document.createElement("button");
-  createdSticker.innerHTML = text!;
-  createdSticker.addEventListener("click", () => {
-    cursor.currentSticker = createdSticker.innerHTML;
-    cursor.isSticker = true;
-    dispatchEvent(toolMoved);
-  });
-  app.append(createdSticker);
-});
-//Appending
+
+//creation of custon stickers
 app.append(canvas);
 app.append(header);
 app.append(clearButton);
@@ -314,8 +305,20 @@ app.append(redoButton);
 app.append(thinMarker);
 app.append(thickMarker);
 app.append(customSticker);
-//implements and appends current array of default stickers
-stickers.forEach((element) => {
+
+customSticker.addEventListener("click", () => {
+  const text = prompt("Custom sticker text", "🧽")!;
+  const createdSticker = document.createElement("button");
+  createdSticker.innerHTML = text;
+  createdSticker.addEventListener("click", () => {
+    cursor.currentSticker = createdSticker.innerHTML;
+    cursor.isSticker = true;
+    dispatchEvent(toolMoved);
+  });
+  app.append(createdSticker);
+});
+
+STICKERS.forEach((element) => {
   const generalSticker = document.createElement("button");
   generalSticker.innerHTML = element.emoji;
   generalSticker.addEventListener("click", () => {
