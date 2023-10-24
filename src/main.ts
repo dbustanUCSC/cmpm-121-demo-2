@@ -20,7 +20,7 @@ canvas.style.background = "white";
 canvas.style.boxShadow = "1rem 1rem 20px grey";
 canvas.style.border = "10px solid black";
 canvas.style.cursor = "none";
-const ctx = canvas.getContext("2d")!;
+let ctx = canvas.getContext("2d")!;
 
 ctx.fillStyle = "white";
 ctx.fillRect(rectXorigin, rectYorigin, canvasWidth, canvasHeight);
@@ -32,6 +32,7 @@ const redoButton = createButton("redo");
 const thinMarker = createButton("thin marker");
 const thickMarker = createButton("thick marker");
 const customSticker = createButton("custom sticker...");
+const exportButton = createButton("export");
 
 
 function createButton(name: string) {
@@ -221,7 +222,6 @@ canvas.addEventListener("mousedown", (mouseInfo) => {
   if (cursor.isSticker) {
     newSticker = new Sticker(cursor.currentSticker, cursor.x, cursor.y);
     allStickers.push(newSticker);
-    //dispatchEvent(drawingChanged);
   } else {
     line = new MarkerLine(thickness);
     lineHolder.push(line);
@@ -295,6 +295,25 @@ thinMarker.addEventListener("click", () => {
   cursor.lineThickness = thickness;
   dispatchEvent(toolMoved);
 });
+const exportCanvasW = 1024;
+const exportCanvasH = 1024;
+const canvasScale = 4;
+
+exportButton.addEventListener("click", () => {
+  const exportCanvas = document.createElement("canvas");
+  exportCanvas.width = exportCanvasW;
+  exportCanvas.height = exportCanvasH;
+  ctx = exportCanvas.getContext("2d")!;
+  //FIX CANVAS export
+  ctx.fillStyle = "white";
+  ctx.scale(canvasScale, canvasScale);
+  dispatchEvent(drawingChanged);
+  const anchor = document.createElement("a");
+  anchor.href = exportCanvas.toDataURL("image/png");
+  anchor.download = "heya.png";
+  anchor.click();
+  ctx = canvas.getContext("2d")!;
+});
 
 //creation of custon stickers
 app.append(canvas);
@@ -305,6 +324,7 @@ app.append(redoButton);
 app.append(thinMarker);
 app.append(thickMarker);
 app.append(customSticker);
+app.append(exportButton);
 
 customSticker.addEventListener("click", () => {
   const text = prompt("Custom sticker text", "🧽")!;
