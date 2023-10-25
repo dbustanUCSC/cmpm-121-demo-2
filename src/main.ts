@@ -7,9 +7,9 @@ const gameName = "Drawing Simulation!";
 document.title = gameName;
 
 const header = document.createElement("h1");
-const div1 = document.createElement("div");
-const div2 = document.createElement("div");
-const div3 = document.createElement("div");
+//const div1 = document.createElement("div");
+//const div2 = document.createElement("div");
+//const div3 = document.createElement("div");
 
 
 header.innerHTML = gameName;
