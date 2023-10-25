@@ -7,9 +7,9 @@ const gameName = "Drawing Simulation!";
 document.title = gameName;
 
 const header = document.createElement("h1");
-//const div1 = document.createElement("div");
-//const div2 = document.createElement("div");
-//const div3 = document.createElement("div");
+const div1 = document.createElement("div");
+const div2 = document.createElement("div");
+const div3 = document.createElement("div");
 
 
 header.innerHTML = gameName;
@@ -22,6 +22,9 @@ class Color {
   }
   get() {
     return this.color.value;
+  }
+  random() {
+    this.color.value = "#" + Math.floor(Math.random()*16777215).toString(16);
   }
 }
 
@@ -53,6 +56,7 @@ const exportButton = createButton("export");
 function createButton(name: string) {
   const b = document.createElement("button");
   b.innerHTML = name;
+  div1.appendChild(b);
   return b;
 }
 
@@ -158,7 +162,7 @@ class MarkerLine {
       ctx.beginPath();
       const { x, y } = this.line[0];
       ctx.arc(x, y, radius, startAngle, endAngle);
-      ctx.fillStyle = "black";
+      ctx.fillStyle = this.color;
       ctx.lineWidth = thickRadius - 2.5;
       ctx.fill();
       ctx.stroke();
@@ -196,6 +200,7 @@ class CursorInformation {
   isSticker: boolean;
   currentSticker: string;
   lineThickness: string;
+  randomColor: string;
   x: number;
   y: number;
   constructor(
@@ -203,6 +208,7 @@ class CursorInformation {
     isSticker: boolean,
     currentSticker: string,
     lineThickness: string,
+    randomColor: string,
     x: number,
     y: number
   ) {
@@ -210,6 +216,7 @@ class CursorInformation {
     this.isSticker = isSticker;
     this.currentSticker = currentSticker;
     this.lineThickness = lineThickness;
+    this.randomColor = randomColor;
     this.x = x;
     this.y = y;
   }
@@ -220,7 +227,7 @@ class CursorInformation {
   }
   draw(ctx: CanvasRenderingContext2D) {
     dispatchEvent(drawingChanged);
-    ctx.fillStyle = "black";
+    ctx.fillStyle = colorVar.get();
     ctx.beginPath();
     if (thickness == "thick") {
       ctx.arc(this.x, this.y, thickRadius, startAngle, endAngle, false);
@@ -245,8 +252,8 @@ function handleDrawing() {
   allStickers.displayStickers(ctx);
 }
 
-const cursor = new CursorInformation(false, false, "null", thickness, 0, 0);
-const color = new Color();
+const cursor = new CursorInformation(false, false, "null", "null",thickness, 0, 0);
+const colorVar = new Color();
 let newSticker: Sticker;
 let line: MarkerLine;
 
@@ -256,7 +263,7 @@ canvas.addEventListener("mousedown", (mouseInfo) => {
     newSticker = new Sticker(cursor.currentSticker, cursor.x, cursor.y);
     allStickers.push(newSticker);
   } else {
-    line = new MarkerLine(thickness, color.get());
+    line = new MarkerLine(thickness, colorVar.get());
     lineHolder.push(line);
     line.drag(cursor.x, cursor.y);
     
@@ -322,6 +329,7 @@ thickMarker.addEventListener("click", () => {
   cursor.isSticker = false;
   thickness = "thick";
   cursor.lineThickness = thickness;
+  colorVar.random();
   dispatchEvent(toolMoved);
 });
 
@@ -329,6 +337,7 @@ thinMarker.addEventListener("click", () => {
   cursor.isSticker = false;
   thickness = "thin";
   cursor.lineThickness = thickness;
+  colorVar.random();
   dispatchEvent(toolMoved);
 });
 const exportCanvasW = 1024;
@@ -348,16 +357,13 @@ exportButton.addEventListener("click", () => {
   anchor.click();
   ctx = canvas.getContext("2d")!;
 });
-
-app.append(canvas);
 app.append(header); 
-app.append(clearButton);
-app.append(undoButton);
-app.append(redoButton);
-app.append(thinMarker);
-app.append(thickMarker);
-app.append(customSticker);
-app.append(exportButton);
+app.append(canvas);
+app.append(div1);
+app.append(div2);
+app.append(div3);
+
+
 
 customSticker.addEventListener("click", () => {
   const text = prompt("Custom sticker text", "🧽");
@@ -369,7 +375,7 @@ customSticker.addEventListener("click", () => {
       cursor.isSticker = true;
     dispatchEvent(toolMoved);
   });
-  app.append(createdSticker);
+  div2.append(createdSticker);
   }
   
 });
@@ -382,7 +388,7 @@ STICKERS.forEach((element) => {
     cursor.isSticker = true;
     dispatchEvent(toolMoved);
   });
-  app.append(generalSticker);
+  div2.appendChild(generalSticker);
 });
 
-app.append(color.color);
+div3.append(colorVar.color);
