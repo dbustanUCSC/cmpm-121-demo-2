@@ -39,7 +39,8 @@ class Color {
     return this.color.value;
   }
   random() {
-    this.color.value = "#" + Math.floor(Math.random() * 16777215).toString(16);
+    const white = 16777215;
+    this.color.value = "#" + Math.floor(Math.random() * white).toString(16);
   }
 }
 
@@ -92,7 +93,8 @@ class Sticker {
   draw(ctx: CanvasRenderingContext2D) {
     ctx.font = "arial";
     ctx.fillStyle = "black";
-    ctx.fillText(this.stickerName, this.x, this.y, 50);
+    const EMOJI_WIDTH = 50;
+    ctx.fillText(this.stickerName, this.x, this.y, EMOJI_WIDTH);
   }
   drag(x: number, y: number) {
     this.x = x;
@@ -237,7 +239,9 @@ class CursorInformation {
   drawSticker(ctx: CanvasRenderingContext2D) {
     dispatchEvent(drawingChanged);
     ctx.font = "30px Arial";
+    ctx.fillStyle = "black";
     const EMOJI_WIDTH = 50;
+
     ctx.fillText(cursor.currentSticker, this.x, this.y, EMOJI_WIDTH);
   }
 }
@@ -250,7 +254,17 @@ function handleDrawing() {
   allStickers.displayStickers(ctx);
 }
 
-const cursor = new CursorInformation(false, false, "null", thickness, 0, 0);
+const INITAL_MOUSE_POSITION = 0;
+
+const cursor = new CursorInformation(
+  false,
+  false,
+  "null",
+  thickness,
+  INITAL_MOUSE_POSITION,
+  INITAL_MOUSE_POSITION
+);
+
 const colorVar = new Color();
 let newSticker: Sticker;
 let line: MarkerLine;
