@@ -11,22 +11,7 @@ const div1 = document.createElement("div");
 const div2 = document.createElement("div");
 const div3 = document.createElement("div");
 
-
 header.innerHTML = gameName;
-
-class Color {
-  color: HTMLInputElement;
-  constructor() {
-    this.color = document.createElement("input");
-    this.color.type = "color";
-  }
-  get() {
-    return this.color.value;
-  }
-  random() {
-    this.color.value = "#" + Math.floor(Math.random()*16777215).toString(16);
-  }
-}
 
 const canvas = document.createElement("canvas");
 const canvasWidth = 256;
@@ -44,14 +29,19 @@ let ctx = canvas.getContext("2d")!;
 ctx.fillStyle = "white";
 ctx.fillRect(rectXorigin, rectYorigin, canvasWidth, canvasHeight);
 
-//buttons
-const clearButton = createButton("clear!");
-const undoButton = createButton("undo");
-const redoButton = createButton("redo");
-const thinMarker = createButton("thin marker");
-const thickMarker = createButton("thick marker");
-const customSticker = createButton("custom sticker...");
-const exportButton = createButton("export");
+class Color {
+  color: HTMLInputElement;
+  constructor() {
+    this.color = document.createElement("input");
+    this.color.type = "color";
+  }
+  get() {
+    return this.color.value;
+  }
+  random() {
+    this.color.value = "#" + Math.floor(Math.random() * 16777215).toString(16);
+  }
+}
 
 function createButton(name: string) {
   const b = document.createElement("button");
@@ -59,6 +49,14 @@ function createButton(name: string) {
   div1.appendChild(b);
   return b;
 }
+
+const clearButton = createButton("clear!");
+const undoButton = createButton("undo");
+const redoButton = createButton("redo");
+const thinMarker = createButton("thin marker");
+const thickMarker = createButton("thick marker");
+const customSticker = createButton("custom sticker...");
+const exportButton = createButton("export");
 
 const STICKERS = [
   { name: "witch", emoji: "🧙‍♀️" },
@@ -149,21 +147,26 @@ class MarkerLine {
     const { x, y } = this.line[0];
     ctx.beginPath();
     ctx.moveTo(x, y);
-      for (const { x, y } of this.line) {
-        ctx.lineTo(x, y);
-      }
-    
+    for (const { x, y } of this.line) {
+      ctx.lineTo(x, y);
+    }
 
     ctx.stroke();
   }
 
   drawCircle(ctx: CanvasRenderingContext2D, radius: number) {
-    if (this.line.length === 1) {
-      ctx.beginPath();
+    const manyPoints = 8;
+    const noPoints = 0;
+    if (this.line.length <= manyPoints && this.line.length > noPoints) {
       const { x, y } = this.line[0];
+      const reduceLineWidth = 2.5;
+      ctx.beginPath();
       ctx.arc(x, y, radius, startAngle, endAngle);
       ctx.fillStyle = this.color;
-      ctx.lineWidth = thickRadius - 2.5;
+      if (radius == thickRadius) {
+        ctx.lineWidth = radius - reduceLineWidth;
+      }
+
       ctx.fill();
       ctx.stroke();
     }
@@ -177,12 +180,10 @@ class MarkerLine {
   }
 }
 
-//button creations
-
 const thinLineWidth = 1;
 const thickLineWidth = 7;
-const thickRadius = thickLineWidth/2;
-const thinRadius = thinLineWidth/2;
+const thickRadius = thickLineWidth / 2;
+const thinRadius = thinLineWidth / 2;
 const startAngle = 0;
 const endAngle = 10;
 
@@ -200,7 +201,6 @@ class CursorInformation {
   isSticker: boolean;
   currentSticker: string;
   lineThickness: string;
-  randomColor: string;
   x: number;
   y: number;
   constructor(
@@ -208,7 +208,6 @@ class CursorInformation {
     isSticker: boolean,
     currentSticker: string,
     lineThickness: string,
-    randomColor: string,
     x: number,
     y: number
   ) {
@@ -216,7 +215,6 @@ class CursorInformation {
     this.isSticker = isSticker;
     this.currentSticker = currentSticker;
     this.lineThickness = lineThickness;
-    this.randomColor = randomColor;
     this.x = x;
     this.y = y;
   }
@@ -247,12 +245,12 @@ class CursorInformation {
 function handleDrawing() {
   ctx.clearRect(rectXorigin, rectYorigin, canvasWidth, canvasHeight);
   ctx.fillStyle = "white";
-  ctx.fillRect(0, 0, canvasWidth, canvasHeight);
+  ctx.fillRect(rectXorigin, rectYorigin, canvasWidth, canvasHeight);
   lineHolder.displaylines(ctx);
   allStickers.displayStickers(ctx);
 }
 
-const cursor = new CursorInformation(false, false, "null", "null",thickness, 0, 0);
+const cursor = new CursorInformation(false, false, "null", thickness, 0, 0);
 const colorVar = new Color();
 let newSticker: Sticker;
 let line: MarkerLine;
@@ -266,7 +264,6 @@ canvas.addEventListener("mousedown", (mouseInfo) => {
     line = new MarkerLine(thickness, colorVar.get());
     lineHolder.push(line);
     line.drag(cursor.x, cursor.y);
-    
   }
   cursor.updateCoords(mouseInfo.offsetX, mouseInfo.offsetY);
   dispatchEvent(toolMoved);
@@ -297,7 +294,6 @@ canvas.addEventListener("mouseup", () => {
   cursor.active = false;
   dispatchEvent(drawingChanged);
   dispatchEvent(toolMoved);
-  
 });
 
 canvas.addEventListener("mouseleave", () => {
@@ -340,6 +336,7 @@ thinMarker.addEventListener("click", () => {
   colorVar.random();
   dispatchEvent(toolMoved);
 });
+
 const exportCanvasW = 1024;
 const exportCanvasH = 1024;
 const exportCanvasScale = 4;
@@ -357,13 +354,11 @@ exportButton.addEventListener("click", () => {
   anchor.click();
   ctx = canvas.getContext("2d")!;
 });
-app.append(header); 
+app.append(header);
 app.append(canvas);
 app.append(div1);
 app.append(div2);
 app.append(div3);
-
-
 
 customSticker.addEventListener("click", () => {
   const text = prompt("Custom sticker text", "🧽");
@@ -371,13 +366,12 @@ customSticker.addEventListener("click", () => {
     const createdSticker = document.createElement("button");
     createdSticker.innerHTML = text;
     createdSticker.addEventListener("click", () => {
-    cursor.currentSticker = createdSticker.innerHTML;
+      cursor.currentSticker = createdSticker.innerHTML;
       cursor.isSticker = true;
-    dispatchEvent(toolMoved);
-  });
-  div2.append(createdSticker);
+      dispatchEvent(toolMoved);
+    });
+    div2.append(createdSticker);
   }
-  
 });
 
 STICKERS.forEach((element) => {
