@@ -157,7 +157,7 @@ class MarkerLine {
   }
 
   drawCircle(ctx: CanvasRenderingContext2D, radius: number) {
-    const manyPoints = 8;
+    const manyPoints = 2;
     const noPoints = 0;
     if (this.line.length <= manyPoints && this.line.length > noPoints) {
       const { x, y } = this.line[0];
