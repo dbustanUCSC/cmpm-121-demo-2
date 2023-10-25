@@ -9,6 +9,17 @@ document.title = gameName;
 const header = document.createElement("h1");
 header.innerHTML = gameName;
 
+class Color {
+  color: HTMLInputElement;
+  constructor() {
+    this.color = document.createElement("input");
+    this.color.type = "color";
+  }
+  get() {
+    return this.color.value;
+  }
+}
+
 const canvas = document.createElement("canvas");
 const canvasWidth = 256;
 const canvasHeight = 256;
@@ -112,8 +123,10 @@ class HoldersofLines {
 }
 
 class MarkerLine {
-  constructor(thickness: string) {
+  color: string;
+  constructor(thickness: string, color: string) {
     this.lineW = thickness;
+    this.color = color;
   }
 
   lineW: string;
@@ -121,6 +134,7 @@ class MarkerLine {
 
   display(ctx: CanvasRenderingContext2D) {
     ctx.beginPath();
+    ctx.strokeStyle = this.color;
     if (this.lineW == "thin") {
       ctx.lineWidth = thinLineWidth;
     } else if (this.lineW == "thick") {
@@ -207,13 +221,13 @@ class CursorInformation {
   }
 }
 
-const cursor = new CursorInformation(false, false, "null", thickness, 0, 0);
-
 function handleDrawing() {
   lineHolder.displaylines(ctx);
   allStickers.displayStickers(ctx);
 }
 
+const cursor = new CursorInformation(false, false, "null", thickness, 0, 0);
+const color = new Color();
 let newSticker: Sticker;
 let line: MarkerLine;
 
@@ -223,7 +237,7 @@ canvas.addEventListener("mousedown", (mouseInfo) => {
     newSticker = new Sticker(cursor.currentSticker, cursor.x, cursor.y);
     allStickers.push(newSticker);
   } else {
-    line = new MarkerLine(thickness);
+    line = new MarkerLine(thickness, color.get());
     lineHolder.push(line);
     line.drag(cursor.x, cursor.y);
   }
@@ -345,3 +359,5 @@ STICKERS.forEach((element) => {
   });
   app.append(generalSticker);
 });
+
+app.append(color.color);
