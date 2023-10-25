@@ -7,6 +7,11 @@ const gameName = "Drawing Simulation!";
 document.title = gameName;
 
 const header = document.createElement("h1");
+const div1 = document.createElement("div");
+const div2 = document.createElement("div");
+const div3 = document.createElement("div");
+
+
 header.innerHTML = gameName;
 
 class Color {
@@ -97,16 +102,12 @@ class HoldersofLines {
   markerLines: MarkerLine[] = [];
 
   displaylines(ctx: CanvasRenderingContext2D) {
-    ctx.clearRect(rectXorigin, rectYorigin, canvasWidth, canvasHeight);
-    ctx.fillStyle = "white";
-    ctx.fillRect(0, 0, canvasWidth, canvasHeight);
     for (const line of lineHolder.markerLines) {
-      if (line.length() > 1) {
+      if (line.length() > 0) {
         line.display(ctx);
       }
     }
   }
-
   push(line: MarkerLine) {
     this.markerLines.push(line);
   }
@@ -133,21 +134,36 @@ class MarkerLine {
   line: { x: number; y: number }[] = [];
 
   display(ctx: CanvasRenderingContext2D) {
-    ctx.beginPath();
     ctx.strokeStyle = this.color;
     if (this.lineW == "thin") {
       ctx.lineWidth = thinLineWidth;
+      this.drawCircle(ctx, thinRadius);
     } else if (this.lineW == "thick") {
       ctx.lineWidth = thickLineWidth;
+      this.drawCircle(ctx, thickRadius);
     }
     const { x, y } = this.line[0];
+    ctx.beginPath();
     ctx.moveTo(x, y);
-    for (const { x, y } of this.line) {
-      ctx.lineTo(x, y);
-    }
+      for (const { x, y } of this.line) {
+        ctx.lineTo(x, y);
+      }
+    
+
     ctx.stroke();
   }
 
+  drawCircle(ctx: CanvasRenderingContext2D, radius: number) {
+    if (this.line.length === 1) {
+      ctx.beginPath();
+      const { x, y } = this.line[0];
+      ctx.arc(x, y, radius, startAngle, endAngle);
+      ctx.fillStyle = "black";
+      ctx.lineWidth = thickRadius - 2.5;
+      ctx.fill();
+      ctx.stroke();
+    }
+  }
   drag(x: number, y: number) {
     this.line.push({ x, y });
     dispatchEvent(drawingChanged);
@@ -161,8 +177,8 @@ class MarkerLine {
 
 const thinLineWidth = 1;
 const thickLineWidth = 7;
-const thickRadius = thickLineWidth / 2;
-const thinRadius = thinLineWidth + 0.5;
+const thickRadius = thickLineWidth/2;
+const thinRadius = thinLineWidth/2;
 const startAngle = 0;
 const endAngle = 10;
 
@@ -222,6 +238,9 @@ class CursorInformation {
 }
 
 function handleDrawing() {
+  ctx.clearRect(rectXorigin, rectYorigin, canvasWidth, canvasHeight);
+  ctx.fillStyle = "white";
+  ctx.fillRect(0, 0, canvasWidth, canvasHeight);
   lineHolder.displaylines(ctx);
   allStickers.displayStickers(ctx);
 }
@@ -240,6 +259,7 @@ canvas.addEventListener("mousedown", (mouseInfo) => {
     line = new MarkerLine(thickness, color.get());
     lineHolder.push(line);
     line.drag(cursor.x, cursor.y);
+    
   }
   cursor.updateCoords(mouseInfo.offsetX, mouseInfo.offsetY);
   dispatchEvent(toolMoved);
@@ -269,6 +289,8 @@ function handleTool() {
 canvas.addEventListener("mouseup", () => {
   cursor.active = false;
   dispatchEvent(drawingChanged);
+  dispatchEvent(toolMoved);
+  
 });
 
 canvas.addEventListener("mouseleave", () => {
@@ -328,7 +350,7 @@ exportButton.addEventListener("click", () => {
 });
 
 app.append(canvas);
-app.append(header);
+app.append(header); 
 app.append(clearButton);
 app.append(undoButton);
 app.append(redoButton);
@@ -338,15 +360,18 @@ app.append(customSticker);
 app.append(exportButton);
 
 customSticker.addEventListener("click", () => {
-  const text = prompt("Custom sticker text", "🧽")!;
-  const createdSticker = document.createElement("button");
-  createdSticker.innerHTML = text;
-  createdSticker.addEventListener("click", () => {
+  const text = prompt("Custom sticker text", "🧽");
+  if (text != null) {
+    const createdSticker = document.createElement("button");
+    createdSticker.innerHTML = text;
+    createdSticker.addEventListener("click", () => {
     cursor.currentSticker = createdSticker.innerHTML;
-    cursor.isSticker = true;
+      cursor.isSticker = true;
     dispatchEvent(toolMoved);
   });
   app.append(createdSticker);
+  }
+  
 });
 
 STICKERS.forEach((element) => {
