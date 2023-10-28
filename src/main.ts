@@ -106,8 +106,9 @@ class HoldersofLines {
   markerLines: MarkerLine[] = [];
 
   displaylines(ctx: CanvasRenderingContext2D) {
+    const NO_LINES = 0;
     for (const line of lineHolder.markerLines) {
-      if (line.length() > 0) {
+      if (line.length() > NO_LINES) {
         line.display(ctx);
       }
     }
@@ -157,9 +158,9 @@ class MarkerLine {
   }
 
   drawCircle(ctx: CanvasRenderingContext2D, radius: number) {
-    const manyPoints = 2;
-    const noPoints = 0;
-    if (this.line.length <= manyPoints && this.line.length > noPoints) {
+    const MANY_POINTS = 2;
+    const NO_POINTS = 0;
+    if (this.line.length <= MANY_POINTS && this.line.length > NO_POINTS) {
       const { x, y } = this.line[0];
       const reduceLineWidth = 2.5;
       ctx.beginPath();
@@ -368,11 +369,6 @@ exportButton.addEventListener("click", () => {
   anchor.click();
   ctx = canvas.getContext("2d")!;
 });
-app.append(header);
-app.append(canvas);
-app.append(div1);
-app.append(div2);
-app.append(div3);
 
 customSticker.addEventListener("click", () => {
   const text = prompt("Custom sticker text", "🧽");
@@ -400,3 +396,9 @@ STICKERS.forEach((element) => {
 });
 
 div3.append(colorVar.color);
+
+app.append(header);
+app.append(canvas);
+app.append(div1);
+app.append(div2);
+app.append(div3);
